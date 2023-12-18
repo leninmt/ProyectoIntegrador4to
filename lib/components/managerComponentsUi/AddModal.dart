@@ -1,4 +1,3 @@
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/material.dart';
 import 'package:modernlogintute/services/firebase_service.dart';
 import 'constants.dart';
@@ -30,6 +29,8 @@ class _AddModalState extends State<AddModal> {
 
   final TextEditingController websiteController = TextEditingController();
   String selectedPlatform = '';
+
+  bool _obscurePassword = true;
 
   @override
   void initState() {
@@ -63,7 +64,6 @@ class _AddModalState extends State<AddModal> {
             ),
             TextButton(
               onPressed: () async {
-                // Agregar la nueva plataforma a la colección "platforms" en Firebase
                 await _firebaseService.addPlatform(websiteController.text);
 
                 setState(() {
@@ -128,7 +128,7 @@ class _AddModalState extends State<AddModal> {
               formTextField(
                   "Ingrese su e-mail", Icons.email, widget.emailController),
               formHeading("Contraseña"),
-              formTextField("Ingrese su contraseña", Icons.lock_outline,
+              formPasswordField("Ingrese su contraseña", Icons.lock_outline,
                   widget.passwordController),
             ],
           ),
@@ -153,35 +153,25 @@ class _AddModalState extends State<AddModal> {
                     MaterialStatePropertyAll(Constants.buttonBackground),
               ),
               onPressed: () async {
-                String website = selectedPlatform;
-                String username = widget.usernameController.text;
-                String email = widget.emailController.text;
-                String password = widget.passwordController.text;
+                if (_validateFields()) {
+                  String website = selectedPlatform;
+                  String username = widget.usernameController.text;
+                  String email = widget.emailController.text;
+                  String password = widget.passwordController.text;
 
-                // Aquí se usa el método onSaveCredentialToFirestore con un parámetro adicional para la plataforma seleccionada
-                await widget.onSaveCredentialToFirestore(
-                    website, username, email, password, selectedPlatform);
+                  await widget.onSaveCredentialToFirestore(
+                      website, username, email, password, selectedPlatform);
 
-                widget.usernameController.clear();
-                widget.emailController.clear();
-                widget.passwordController.clear();
-                widget.websiteController.clear();
+                  widget.usernameController.clear();
+                  widget.emailController.clear();
+                  widget.passwordController.clear();
+                  widget.websiteController.clear();
 
-                Navigator.pop(context);
-
-                /// Muestra un Toast después de guardar la credencial
-                Fluttertoast.showToast(
-                  msg: 'Credencial guardada exitosamente',
-                  toastLength: Toast.LENGTH_SHORT,
-                  gravity: ToastGravity.BOTTOM,
-                );
-
-                // Muestra un segundo Toast para indicar que se guardó la plataforma
-                Fluttertoast.showToast(
-                  msg: 'Sitio web o plataforma "$website" agregado',
-                  toastLength: Toast.LENGTH_SHORT,
-                  gravity: ToastGravity.BOTTOM,
-                );
+                  _showSuccessToast("Credencial guardada con éxito");
+                  Navigator.pop(context);
+                } else {
+                  _showErrorToast("Por favor, complete todos los campos");
+                }
               },
               child: const Text(
                 "Guardar",
@@ -228,6 +218,12 @@ class _AddModalState extends State<AddModal> {
           ),
         ),
         style: const TextStyle(),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Este campo no puede estar vacío';
+          }
+          return null;
+        },
       ),
     );
   }
@@ -357,5 +353,85 @@ class _AddModalState extends State<AddModal> {
         style: const TextStyle(),
       ),
     );
+  }
+
+  Widget formPasswordField(
+      String hintText, IconData icon, TextEditingController controller) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: TextFormField(
+        controller: controller,
+        obscureText: _obscurePassword,
+        decoration: InputDecoration(
+          prefixIcon: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 5, 5, 5),
+            child: Icon(
+              icon,
+              color: Constants.searchGrey,
+            ),
+          ),
+          suffixIcon: InkWell(
+            onTap: () {
+              setState(() {
+                _obscurePassword = !_obscurePassword;
+              });
+            },
+            child: Icon(
+              _obscurePassword ? Icons.visibility : Icons.visibility_off,
+              color: Constants.searchGrey,
+            ),
+          ),
+          filled: true,
+          contentPadding: const EdgeInsets.all(16),
+          hintText: hintText,
+          hintStyle: TextStyle(
+            color: Constants.searchGrey,
+            fontWeight: FontWeight.w500,
+          ),
+          fillColor: const Color.fromARGB(181, 57, 146, 94),
+          border: OutlineInputBorder(
+            borderSide: const BorderSide(
+              width: 0,
+              style: BorderStyle.none,
+            ),
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+        style: const TextStyle(),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Este campo no puede estar vacío';
+          } else if (value.length < 8) {
+            return 'La contraseña debe tener al menos 8 caracteres';
+          }
+          return null;
+        },
+      ),
+    );
+  }
+
+  void _showSuccessToast(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+
+  void _showErrorToast(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+  bool _validateFields() {
+    return widget.usernameController.text.isNotEmpty &&
+        widget.emailController.text.isNotEmpty &&
+        widget.passwordController.text.isNotEmpty &&
+        selectedPlatform.isNotEmpty;
   }
 }

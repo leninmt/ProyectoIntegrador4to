@@ -85,7 +85,7 @@ class HomePage extends StatelessWidget {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Tu Aplicación'),
+          title: Text('Your Credentials Vault'),
         ),
         drawer: Drawer(
           child: ListView(
