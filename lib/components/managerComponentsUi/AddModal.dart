@@ -1,3 +1,4 @@
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/material.dart';
 import 'package:modernlogintute/services/firebase_service.dart';
 import 'constants.dart';
@@ -167,6 +168,20 @@ class _AddModalState extends State<AddModal> {
                 widget.websiteController.clear();
 
                 Navigator.pop(context);
+
+                /// Muestra un Toast después de guardar la credencial
+                Fluttertoast.showToast(
+                  msg: 'Credencial guardada exitosamente',
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.BOTTOM,
+                );
+
+                // Muestra un segundo Toast para indicar que se guardó la plataforma
+                Fluttertoast.showToast(
+                  msg: 'Sitio web o plataforma "$website" agregado',
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.BOTTOM,
+                );
               },
               child: const Text(
                 "Guardar",
