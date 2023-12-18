@@ -57,6 +57,28 @@ class FirebaseService {
     }
   }
 
+Future<String> getPlatformSite(String platformName) async {
+    try {
+      // Acceder al documento correspondiente en la colección "platforms"
+      var platformDoc = await _firestore.collection('platforms').doc(platformName).get();
+
+      // Verificar si el documento existe y contiene el campo "namePlatforms"
+      if (platformDoc.exists) {
+        var platformSite = platformDoc['namePlatforms'];
+        return platformSite;
+      } else {
+        // Manejar el caso en que el documento no existe
+        return 'No se encontró el sitio asociado';
+      }
+    } catch (e) {
+      // Manejar cualquier error que pueda ocurrir durante la obtención de datos
+      print('Error al obtener el sitio de la plataforma: $e');
+      return 'Error obteniendo el sitio de la plataforma';
+    }
+  }
+
+
+
   Future<void> addPlatform(String platformName) async {
     try {
       await _firestore.collection('platforms').add({
@@ -68,21 +90,23 @@ class FirebaseService {
       // Maneja el error según tus necesidades
     }
   }
-  Future<void> saveCredentialToFirestore(String username, String email, String password, String namePlatform) async {
-  try {
-    final User? user = FirebaseAuth.instance.currentUser;
 
-    if (user != null) {
-      await FirebaseFirestore.instance.collection('credentials').add({
-        'username': username,
-        'email': email,
-        'password': password,
-        'usedRecently': false,
-        'namePlatform': namePlatform,  // Agrega la plataforma seleccionada
-      });
+  Future<void> saveCredentialToFirestore(String username, String email,
+      String password, String namePlatform) async {
+    try {
+      final User? user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        await FirebaseFirestore.instance.collection('credentials').add({
+          'username': username,
+          'email': email,
+          'password': password,
+          'usedRecently': false,
+          'namePlatform': namePlatform, // Agrega la plataforma seleccionada
+        });
+      }
+    } catch (e) {
+      print('Error al guardar la credencial: $e');
     }
-  } catch (e) {
-    print('Error al guardar la credencial: $e');
   }
-}
 }

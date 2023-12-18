@@ -66,7 +66,7 @@ class _MyCredentialsScreenState extends State<MyCredentialsScreen> {
           var credentials = snapshot.data!.docs.map((doc) {
             var data = doc.data() as Map<String, dynamic>;
             return Passwords(
-                namePlatform: data['namePlatform'],
+                platformSite: data['platformSite'],
                 username: data['username'],
                 email: data['email'],
                 password: data['password'],

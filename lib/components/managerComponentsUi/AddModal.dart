@@ -9,7 +9,6 @@ class AddModal extends StatefulWidget {
   final TextEditingController usernameController;
   final TextEditingController emailController;
   final TextEditingController passwordController;
-  final Function(String) onSavePlatformToFirestore;
 
   AddModal({
     required this.onSaveCredentialToFirestore,
@@ -17,7 +16,6 @@ class AddModal extends StatefulWidget {
     required this.usernameController,
     required this.emailController,
     required this.passwordController,
-    required this.onSavePlatformToFirestore,
     Key? key,
   }) : super(key: key);
 
@@ -43,6 +41,44 @@ class _AddModalState extends State<AddModal> {
     setState(() {
       platformList = platforms;
     });
+  }
+
+  void _showAddWebsiteModal(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Agregar Sitio Web'),
+          content: TextField(
+            controller: websiteController,
+            decoration: const InputDecoration(hintText: 'Ingrese el sitio web'),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () async {
+                // Agregar la nueva plataforma a la colección "platforms" en Firebase
+                await _firebaseService.addPlatform(websiteController.text);
+
+                setState(() {
+                  platformList.add(websiteController.text);
+                  selectedPlatform = websiteController.text;
+                });
+
+                websiteController.clear();
+                Navigator.of(context).pop();
+              },
+              child: const Text('Aceptar'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -121,10 +157,9 @@ class _AddModalState extends State<AddModal> {
                 String email = widget.emailController.text;
                 String password = widget.passwordController.text;
 
+                // Aquí se usa el método onSaveCredentialToFirestore con un parámetro adicional para la plataforma seleccionada
                 await widget.onSaveCredentialToFirestore(
                     website, username, email, password, selectedPlatform);
-
-                await widget.onSavePlatformToFirestore(selectedPlatform);
 
                 widget.usernameController.clear();
                 widget.emailController.clear();
@@ -241,7 +276,6 @@ class _AddModalState extends State<AddModal> {
                   setState(() {
                     selectedPlatform = platformList[index];
                   });
-                  widget.onSavePlatformToFirestore(selectedPlatform);
                 },
                 child: websiteBlock(platformList[index]),
               ),
@@ -307,40 +341,6 @@ class _AddModalState extends State<AddModal> {
         ),
         style: const TextStyle(),
       ),
-    );
-  }
-
-  void _showAddWebsiteModal(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Agregar Sitio Web'),
-          content: TextField(
-            controller: websiteController,
-            decoration: const InputDecoration(hintText: 'Ingrese el sitio web'),
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  platformList.add(websiteController.text);
-                  websiteController.clear();
-                  selectedPlatform = platformList.last;
-                });
-                Navigator.of(context).pop();
-              },
-              child: const Text('Aceptar'),
-            ),
-          ],
-        );
-      },
     );
   }
 }

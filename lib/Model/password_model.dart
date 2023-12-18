@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 class Passwords {
-  final String? namePlatform;
+  final String? platformSite;
   final String username;
   final String email;
   final String password;
@@ -10,7 +10,7 @@ class Passwords {
   bool usedRecently; // Agregamos este campo
 
   Passwords({
-    required this.namePlatform,
+    required this.platformSite,
     required this.username,
     required this.email,
     required this.password,
@@ -31,15 +31,16 @@ class Passwords {
       email: email ?? this.email,
       password: password ?? this.password,
       documentId: this.documentId,
-      namePlatform: namePlatform ?? this.namePlatform,
+      platformSite: namePlatform ?? this.platformSite,
       platformReference: this.platformReference,
-      usedRecently: usedRecently ?? this.usedRecently, // Aseguramos copiar el campo
+      usedRecently:
+          usedRecently ?? this.usedRecently, // Aseguramos copiar el campo
     );
   }
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
-      'namePlatform': namePlatform,
+      'platformSite': platformSite,
       'username': username,
       'email': email,
       'password': password,
@@ -51,7 +52,7 @@ class Passwords {
 
   factory Passwords.fromMap(Map<String, dynamic> map) {
     return Passwords(
-      namePlatform: map["namePlatform"] as String,
+      platformSite: map["platformSite"] as String,
       username: map['username'] as String,
       email: map['email'] as String,
       password: map['password'] as String,
@@ -68,28 +69,30 @@ class Passwords {
 
   @override
   String toString() =>
-      'Passwords(namePlatform: $namePlatform, username: $username, email: $email, password: $password, documentId: $documentId, platformReference: $platformReference, usedRecently: $usedRecently)';
+      'Passwords(platformSite: $platformSite, username: $username, email: $email, password: $password, documentId: $documentId, platformReference: $platformReference, usedRecently: $usedRecently)';
 
   @override
   bool operator ==(covariant Passwords other) {
     if (identical(this, other)) return true;
 
-    return other.namePlatform == namePlatform &&
+    return other.platformSite == platformSite &&
         other.username == username &&
         other.email == email &&
         other.password == password &&
         other.documentId == documentId &&
         other.platformReference == platformReference &&
-        other.usedRecently == usedRecently; // Comparar también el campo usado recientemente
+        other.usedRecently ==
+            usedRecently; // Comparar también el campo usado recientemente
   }
 
   @override
   int get hashCode =>
-      namePlatform.hashCode ^
+      platformSite.hashCode ^
       username.hashCode ^
       email.hashCode ^
       password.hashCode ^
       documentId.hashCode ^
       platformReference.hashCode ^
-      usedRecently.hashCode; // Incluir el campo usado recientemente en el hashCode
+      usedRecently
+          .hashCode; // Incluir el campo usado recientemente en el hashCode
 }

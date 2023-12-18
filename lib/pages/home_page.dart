@@ -8,7 +8,6 @@ import 'package:modernlogintute/components/managerComponentsUi/CategoryContainer
 import 'package:modernlogintute/components/managerComponentsUi/constants.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:modernlogintute/pages/my_credentials.dart';
-import 'package:modernlogintute/services/firebase_service.dart';
 
 class HomePage extends StatelessWidget {
   final user = FirebaseAuth.instance.currentUser;
@@ -18,16 +17,14 @@ class HomePage extends StatelessWidget {
   final TextEditingController websiteController = TextEditingController();
 
   String get userName => user?.displayName ?? "Usuario";
-  final FirebaseService _firebaseService =
-      FirebaseService(); // Instancia de FirebaseService
 
   // Sign user out method
   void signUserOut() {
     FirebaseAuth.instance.signOut();
   }
 
-  Future<void> saveCredentialToFirestore(
-      String username, String email, String password) async {
+  Future<void> saveCredentialToFirestore(String username, String email,
+      String password, String platformSite) async {
     try {
       final User? user = FirebaseAuth.instance.currentUser;
 
@@ -37,19 +34,11 @@ class HomePage extends StatelessWidget {
           'email': email,
           'password': password,
           'usedRecently': false,
+          'platformSite': platformSite,
         });
       }
     } catch (e) {
-      print('Error al guardar la credencial: $e');
-    }
-  }
-
-  Future<void> _addPlatformToFirestore(String platformName) async {
-    try {
-      await _firebaseService.addPlatform(platformName);
-    } catch (e) {
-      print('Error al agregar plataforma a Firestore: $e');
-      // Manejar el error según sea necesario
+      ('Error al guardar la credencial: $e');
     }
   }
 
@@ -65,57 +54,14 @@ class HomePage extends StatelessWidget {
             ),
             child: AddModal(
               onSaveCredentialToFirestore: (String website, String username,
-                  String email, String password, String namePlatform) async {
-                try {
-                  // Lógica para guardar la credencial en Firestore
-                  await saveCredentialToFirestore(username, email, password);
-                  Fluttertoast.showToast(
-                    msg: "Credencial agregada",
-                    toastLength: Toast.LENGTH_SHORT,
-                    gravity: ToastGravity.BOTTOM,
-                    timeInSecForIosWeb: 1,
-                    backgroundColor: Colors.grey,
-                    textColor: Colors.white,
-                    fontSize: 16.0,
-                  );
-                } catch (e) {
-                  print('Error al agregar credencial a Firestore: $e');
-                  Fluttertoast.showToast(
-                    msg: "Error al agregar credencial",
-                    toastLength: Toast.LENGTH_SHORT,
-                    gravity: ToastGravity.BOTTOM,
-                    timeInSecForIosWeb: 1,
-                    backgroundColor: Colors.red,
-                    textColor: Colors.white,
-                    fontSize: 16.0,
-                  );
-                }
-              },
-              onSavePlatformToFirestore: (String platformName) async {
-                try {
-                  // Lógica para guardar la plataforma en Firestore
-                  await _addPlatformToFirestore(platformName);
-                  Fluttertoast.showToast(
-                    msg: "Plataforma agregada",
-                    toastLength: Toast.LENGTH_SHORT,
-                    gravity: ToastGravity.BOTTOM,
-                    timeInSecForIosWeb: 1,
-                    backgroundColor: Colors.grey,
-                    textColor: Colors.white,
-                    fontSize: 16.0,
-                  );
-                } catch (e) {
-                  print('Error al agregar plataforma a Firestore: $e');
-                  Fluttertoast.showToast(
-                    msg: "Error al agregar plataforma",
-                    toastLength: Toast.LENGTH_SHORT,
-                    gravity: ToastGravity.BOTTOM,
-                    timeInSecForIosWeb: 1,
-                    backgroundColor: Colors.red,
-                    textColor: Colors.white,
-                    fontSize: 16.0,
-                  );
-                }
+                  String email, String password, String plaformSite) async {
+                await saveCredentialToFirestore(
+                    username, email, password, plaformSite);
+                // Limpia los controladores después de enviar los datos
+                websiteController.clear();
+                usernameController.clear();
+                emailController.clear();
+                passwordController.clear();
               },
               websiteController: websiteController,
               usernameController: usernameController,
@@ -257,7 +203,7 @@ class HomePage extends StatelessWidget {
                     var credentials = snapshot.data!.docs.map((doc) {
                       var data = doc.data() as Map<String, dynamic>;
                       return Passwords(
-                        namePlatform: data['namePlatform'],
+                        platformSite: data['namePlatform'],
                         username: data['username'],
                         email: data['email'],
                         password: data['password'],
